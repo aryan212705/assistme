@@ -1,0 +1,158 @@
+.pointer-div {
+    position: absolute;
+    background-color: #000000;
+    border-radius: 0.5em;
+    display: none;
+    align-content: center;
+    z-index: 1000000;
+}
+
+.pointer-div:after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin: 0 auto;
+    width: 0;
+    height: 0;
+    border-top: solid 5px #000000;
+    border-left: solid 5px transparent;
+    border-right: solid 5px transparent;
+}
+
+.fa-search-change {
+    color: #ffffff;
+    padding: 0.5em 0.7em 0.5em 0.7em;
+}
+
+.search-results-div {
+    position: absolute;
+    background: #ffffff;
+    display: none;
+    width: 400px !important;
+    max-height: 300px;
+    padding: 10px;
+    z-index: 100000;
+}
+
+.search-results-card {
+    box-shadow: 0 10px 20px 0 rgba(0, 0, 0, 0.5);
+    transition: 0.3s;
+}
+
+.search-results-card:hover {
+    box-shadow: 0 15px 30px 0 rgba(0, 0, 0, 0.8);
+}
+
+.search-results-div-top:after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin: 0 auto;
+    width: 0;
+    height: 0;
+    border-top: solid 10px #ffffff;
+    border-left: solid 10px transparent;
+    border-right: solid 10px transparent;
+}
+
+.search-results-div-bottom:after {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    right: 0;
+    margin: 0 auto;
+    width: 0;
+    height: 0;
+    border-bottom: solid 10px #ffffff;
+    border-left: solid 10px transparent;
+    border-right: solid 10px transparent;
+}
+
+.tab-headers {
+    overflow: hidden;
+    background-color: #ffffff;
+}
+
+.tab-headers a {
+    float: left;
+    display: block;
+    color: #000000;
+    text-align: center;
+    padding: 7px 9px 7px 9px;
+    text-decoration: none;
+    font-size: 15px;
+    border-bottom: 3px solid transparent;
+    box-sizing: border-box;
+}
+
+/*.tab-headers a:hover {*/
+/*    border-bottom: 3px solid #1f80c4;*/
+/*}*/
+
+.tab-headers a.active {
+    border-bottom: 3px solid #1f80c4;
+    background-color: #ffffff;
+}
+
+.tab-content-div {
+    overflow: auto;
+    position: relative;
+    padding: 5px;
+    height: 240px;
+}
+
+.word-context-div {
+    padding-bottom: 5px;
+}
+
+.word-context-div p, li {
+    font-family: Arial, Verdana, Helvetica, sans-serif;
+    line-height: normal;
+    margin: 0 0 3px;
+    font-size: 15px;
+}
+
+.word-context-div li {
+    list-style-type: disc;
+}
+
+.word-heading {
+    font-size: 24px !important;
+    margin: 5px 0 2px !important;
+}
+
+.word-phonetic {
+    color: gray;
+}
+
+.word-origin-heading {
+    font-weight: bold;
+    font-style: italic;
+    color: #605858;
+}
+
+.word-origin {
+    color: gray;
+    font-style: italic;
+}
+
+.part-of-speech {
+    font-weight: bold;
+}
+
+.word-definitions-div {
+    margin-left: 20px !important;
+}
+
+.word-meaning-defn {
+    font-style: italic;
+}
+
+.word-defn-example {
+    color: gray;
+}
