@@ -3,7 +3,6 @@
     background-color: #000000;
     border-radius: 0.5em;
     display: none;
-    align-content: center;
     z-index: 1000000;
 }
 
@@ -81,18 +80,15 @@
 .tab-headers a {
     float: left;
     display: block;
-    color: #000000;
     text-align: center;
     padding: 7px 9px 7px 9px;
     text-decoration: none;
     font-size: 15px;
     border-bottom: 3px solid transparent;
     box-sizing: border-box;
+    color: rgba(6,6,6,0.89);
+    font-family: Arial, Verdana, Helvetica, sans-serif;
 }
-
-/*.tab-headers a:hover {*/
-/*    border-bottom: 3px solid #1f80c4;*/
-/*}*/
 
 .tab-headers a.active {
     border-bottom: 3px solid #1f80c4;
@@ -103,7 +99,7 @@
     overflow: auto;
     position: relative;
     padding: 5px;
-    height: 240px;
+    max-height: 240px;
 }
 
 .word-context-div {
@@ -115,15 +111,18 @@
     line-height: normal;
     margin: 0 0 3px;
     font-size: 15px;
+    text-align: left;
 }
 
 .word-context-div li {
     list-style-type: disc;
+    color: #292424;
 }
 
 .word-heading {
     font-size: 24px !important;
     margin: 5px 0 2px !important;
+    color: rgba(15, 14, 14, 0.8);
 }
 
 .word-phonetic {
@@ -143,6 +142,7 @@
 
 .part-of-speech {
     font-weight: bold;
+    color: #605858;
 }
 
 .word-definitions-div {
@@ -155,4 +155,23 @@
 
 .word-defn-example {
     color: gray;
+}
+
+.word-error-div p {
+    font-family: Arial, Verdana, Helvetica, sans-serif;
+    line-height: normal;
+    text-align: center;
+    margin: 0 0 5px;
+}
+
+.word-error-message {
+    font-size: 20px;
+    font-weight: bold;
+    color: dimgray;
+}
+
+.word-error-resolution {
+    font-size: 17px;
+    color: gray;
+    font-style: italic;
 }

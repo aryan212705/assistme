@@ -17,66 +17,21 @@ let tabNames = [
     ['Web Search', 'webSearch'],
     ['Suggestion', 'suggestion'],
 ];
+let searchIconSelector = $('#' + searchIconDivId);
+let resultsDivSelector = $('#' + searchResultsPopupId);
 let activeTabId = "";
 let searchIconHovered = false;
-let hello = [
-    {
-        "word": "hello",
-        "phonetic": "/həˈlō/",
-        "origin": "Early 19th century variant of earlier hollo; related to holla.",
-        "meanings": [
-            {
-                "partOfSpeech": "exclamation",
-                "definitions": [
-                    {
-                        "definition": "Used as a greeting or to begin a telephone conversation.",
-                        "example": "hello there, Katie!"
-                    }
-                ]
-            },
-            {
-                "partOfSpeech": "noun",
-                "definitions": [
-                    {
-                        "definition": "An utterance of “hello”; a greeting.",
-                        "example": "she was getting polite nods and hellos from people",
-                        "synonyms": [
-                            "greeting",
-                            "welcome",
-                            "salutation",
-                            "saluting",
-                            "hailing",
-                            "address",
-                            "hello",
-                            "hallo"
-                        ]
-                    }
-                ]
-            },
-            {
-                "partOfSpeech": "intransitive verb",
-                "definitions": [
-                    {
-                        "definition": "Say or shout “hello”; greet someone.",
-                        "example": "I pressed the phone button and helloed"
-                    }
-                ]
-            }
-        ]
-    }
-];
 
 
 $(document).on({
     'selectionchange': function () {
         textBoundRects = window.getSelection().getRangeAt(0).getBoundingClientRect();
-        let selector = $('#' + searchIconDivId);
-        selector.hide();
+        searchIconSelector.hide();
         if (window.getSelection().toString()) {
             searchIconHovered = false;
-            selector.css({
-                top: textBoundRects.top - selector.outerHeight() + window.scrollY - 10,
-                left: (textBoundRects.left + textBoundRects.right) / 2 - selector.outerWidth() / 2,
+            searchIconSelector.css({
+                top: textBoundRects.top - searchIconSelector.outerHeight() + window.scrollY - 10,
+                left: (textBoundRects.left + textBoundRects.right) / 2 - searchIconSelector.outerWidth() / 2,
             })
                 .show();
         }
@@ -85,12 +40,13 @@ $(document).on({
 
 
 function searchDictionary(text) {
+    let dictContentSelector = $('#dictionaryContent');
     $.get(DICT_URL + text)
         .done(function (data) {
-            renderDictionary(data);
+            renderDictionary(data, dictContentSelector);
         })
-        .fail(function (data) {
-            renderDictionary(hello);
+        .fail(function () {
+            dictionaryError(dictContentSelector);
         });
 }
 
@@ -112,89 +68,80 @@ function selectCurrentTab(event) {
 }
 
 
-function checkResultsPopupBounds(selector) {
-    let top = textBoundRects.top - selector.outerHeight() + window.scrollY - 15;
-    let left = (textBoundRects.left + textBoundRects.right) / 2 - selector.outerWidth() / 2;
-    let right = left + selector.outerWidth();
-    if (top < 0) {
-        selector.removeClass('search-results-div-top');
-        selector.addClass('search-results-div-bottom');
-        selector.css({
-            top: textBoundRects.bottom + window.scrollY + 15,
-        });
-    }
+function checkResultsPopupBounds() {
+    let left = (textBoundRects.left + textBoundRects.right) / 2 - resultsDivSelector.outerWidth() / 2;
+    let right = left + resultsDivSelector.outerWidth();
     if (left < 0) {
-        selector.css({
+        resultsDivSelector.css({
             left: 0,
         });
     }
     if (right > window.innerWidth) {
-        selector.css({
-            left: window.innerWidth - selector.outerWidth(),
+        resultsDivSelector.css({
+            left: window.innerWidth - resultsDivSelector.outerWidth(),
         });
     }
 }
 
 
-function renderTabLayout(selector) {
-    $('#' + searchIconDivId).hide();
-    selector.empty();
+function renderTabLayout() {
+    resultsDivSelector.empty();
     activeTabId = "";
 
     let tabHeaders = '<div class="tab-headers"></div>';
-    selector.append(tabHeaders);
-
+    resultsDivSelector.append(tabHeaders);
+    let tabHeaderSelector = $('.tab-headers');
     for (let i = 0; i < tabNames.length; i++) {
         let tabButton = `<a id="${tabNames[i][1]}" class="tab-button-links">${tabNames[i][0]}</a>`;
-        $('.tab-headers').append(tabButton);
+        tabHeaderSelector.append(tabButton);
     }
-    $('.tab-button-links').click(this, selectCurrentTab);
+    let tabLinksSelector = $('.tab-button-links');
+    tabLinksSelector.click(this, selectCurrentTab);
 
     for (let i = 0; i < tabNames.length; i++) {
         let tabContent = `<div id="${tabNames[i][1] + 'Content'}" class="tab-content-div"></div>`;
-        selector.append(tabContent);
+        resultsDivSelector.append(tabContent);
     }
-    selector.removeClass('search-results-div-bottom');
-    selector.addClass('search-results-div-top');
+    resultsDivSelector.removeClass('search-results-div-top');
+    resultsDivSelector.addClass('search-results-div-bottom');
 
-    selector.css({
-        top: textBoundRects.top - selector.outerHeight() + window.scrollY - 15,
-        left: (textBoundRects.left + textBoundRects.right) / 2 - selector.outerWidth() / 2,
+    resultsDivSelector.css({
+        top: textBoundRects.bottom + window.scrollY + 15,
+        left: (textBoundRects.left + textBoundRects.right) / 2 - resultsDivSelector.outerWidth() / 2,
     })
         .show();
-    $('.tab-button-links').css({
-        width: $('.tab-headers').outerWidth() / tabNames.length,
+    tabLinksSelector.css({
+        width: tabHeaderSelector.outerWidth() / tabNames.length,
     });
-    checkResultsPopupBounds(selector);
+    checkResultsPopupBounds();
     $('#' + tabNames[0][1]).click();
 }
 
 
-$('#' + searchIconDivId).hover(function (event) {
+searchIconSelector.hover(function () {
     if (searchIconHovered) return;
     searchIconHovered = true;
     let selectedText = window.getSelection().toString();
-    renderTabLayout($('#' + searchResultsPopupId));
+    searchIconSelector.hide();
+    renderTabLayout();
     if (selectedText.length <= dictSearchLimit) {
         searchDictionary(selectedText);
     }
     else {
-        renderDictionary(hello);
+        dictionaryError($('#dictionaryContent'));
     }
 });
 
 
 window.addEventListener('click', function (event) {
-    let selector = $('#' + searchResultsPopupId);
     if (!(event.target.id === searchResultsPopupId || $(event.target).parents("#" + searchResultsPopupId).length)) {
-        selector.hide();
+        resultsDivSelector.hide();
     }
 });
 
 
-function renderDictionary(meaningList) {
-    let selector = $('#dictionaryContent');
-    selector.empty();
+function renderDictionary(meaningList, dictSelector) {
+    dictSelector.empty();
     for (let context of meaningList) {
         let contextDiv = document.createElement('div');
         contextDiv.className = 'word-context-div';
@@ -209,19 +156,6 @@ function renderDictionary(meaningList) {
             wordPhonetic.className = 'word-phonetic';
             wordPhonetic.innerText = context['phonetic'];
             contextDiv.appendChild(wordPhonetic);
-        }
-
-        if (context['origin']) {
-            let wordOriginDiv = document.createElement('div');
-            let wordOriginHeading = document.createElement('p');
-            wordOriginHeading.className = 'word-origin-heading';
-            wordOriginHeading.innerText = 'Origin: ';
-            wordOriginDiv.appendChild(wordOriginHeading);
-            let wordOrigin = document.createElement('p');
-            wordOrigin.className = 'word-origin';
-            wordOrigin.innerText = context['origin'];
-            wordOriginDiv.appendChild(wordOrigin);
-            contextDiv.appendChild(wordOriginDiv);
         }
 
         let meaningDiv = document.createElement('div');
@@ -256,6 +190,21 @@ function renderDictionary(meaningList) {
             }
         }
         contextDiv.appendChild(meaningDiv);
-        selector.append(contextDiv);
+        dictSelector.append(contextDiv);
     }
+}
+
+
+function dictionaryError(dictSelector) {
+    let meaningErrorDiv = document.createElement('div');
+    meaningErrorDiv.className = 'word-error-div';
+    let errorMessage = document.createElement('p');
+    errorMessage.innerText = 'Sorry, we couldn\'t find definitions for the word you were looking for.';
+    errorMessage.className = 'word-error-message';
+    let errorResolution = document.createElement('p');
+    errorResolution.innerText = 'You can try the search again or head to the web instead.';
+    errorResolution.className = 'word-error-resolution';
+    meaningErrorDiv.appendChild(errorMessage);
+    meaningErrorDiv.appendChild(errorResolution);
+    dictSelector.append(meaningErrorDiv);
 }
