@@ -95,6 +95,10 @@
     background-color: #ffffff;
 }
 
+.tab-headers:hover {
+    cursor: pointer;
+}
+
 .tab-content-div {
     overflow: auto;
     position: relative;
@@ -157,21 +161,72 @@
     color: gray;
 }
 
-.word-error-div p {
+.error-div {
+    padding: 30px;
+    text-align: center;
+}
+
+.error-div p {
     font-family: Arial, Verdana, Helvetica, sans-serif;
     line-height: normal;
     text-align: center;
     margin: 0 0 5px;
 }
 
-.word-error-message {
+.error-message {
     font-size: 20px;
     font-weight: bold;
     color: dimgray;
 }
 
-.word-error-resolution {
+.error-resolution {
     font-size: 17px;
     color: gray;
     font-style: italic;
+}
+
+.fa-search-error {
+    color: dimgray;
+    font-size: 30px;
+    padding-bottom: 10px;
+}
+
+.single-result-div {
+    padding-bottom: 5px;
+    padding-top: 5px;
+}
+
+.single-result-div p {
+    font-family: Arial, Verdana, Helvetica, sans-serif;
+    line-height: normal;
+    margin: 0 0 3px;
+    text-align: left;
+}
+
+.result-name-link {
+    font-size: 16px;
+    text-decoration: none;
+    color: #0366d6;
+    font-weight: bold;
+}
+
+.result-name-link:hover {
+    text-underline: #0366d6;
+    color: #0366d6;
+}
+
+.result-link-link {
+    font-size: 12px;
+    text-decoration: none;
+    color: #0e6711;
+}
+
+.result-link-link:hover {
+    text-underline: #0e6711;
+    color: #0e6711;
+}
+
+.result-desc-class {
+    font-size: 13px;
+    color: #605858;
 }

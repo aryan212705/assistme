@@ -1,7 +1,9 @@
-let popupTag = '<div id="searchResults" class="search-results-div search-results-card"></div>'
+let popupTag = '<div id="searchResults" class="search-results-div search-results-card"></div>';
 
 let pointerDivTag = '<div id="searchIcon" class="pointer-div">' +
-    '<i class="fa fa-lg fa-search fa-search-change" aria-hidden="true"></i></div>'
+    '<i class="fa fa-lg fa-search fa-search-change" aria-hidden="true"></i></div>';
+
+let errorSearchIcon = '<i class="fa fa-lg fa-search fa-search-error" aria-hidden="true"></i>'
 
 $('body').append(popupTag);
 $('body').append(pointerDivTag);
@@ -10,7 +12,9 @@ $('body').append(pointerDivTag);
 let searchIconDivId = 'searchIcon';
 let searchResultsPopupId = 'searchResults';
 let DICT_URL = 'https://api.dictionaryapi.dev/api/v2/entries/en/';
+let WEB_API = 'http://localhost:8000/search/';
 let dictSearchLimit = 20;
+let webSearchLimit = 100;
 let textBoundRects;
 let tabNames = [
     ['Dictionary', 'dictionary'],
@@ -47,6 +51,19 @@ function searchDictionary(text) {
         })
         .fail(function () {
             dictionaryError(dictContentSelector);
+        });
+}
+
+
+function searchWeb(text) {
+    let query = {query_string: text};
+    let webSearchSelector = $('#webSearchContent');
+    $.get(WEB_API, query)
+        .done(function (results) {
+            renderWebSearchResults(results, webSearchSelector);
+        })
+        .fail(function () {
+            webSearchError(webSearchSelector);
         });
 }
 
@@ -130,6 +147,12 @@ searchIconSelector.hover(function () {
     else {
         dictionaryError($('#dictionaryContent'));
     }
+    if (selectedText.length <= webSearchLimit) {
+        searchWeb(selectedText);
+    }
+    else {
+        webSearchError($('#webSearchContent'));
+    }
 });
 
 
@@ -196,15 +219,77 @@ function renderDictionary(meaningList, dictSelector) {
 
 
 function dictionaryError(dictSelector) {
+    dictSelector.empty();
     let meaningErrorDiv = document.createElement('div');
-    meaningErrorDiv.className = 'word-error-div';
+    meaningErrorDiv.className = 'error-div';
+    meaningErrorDiv.innerHTML = errorSearchIcon;
+
     let errorMessage = document.createElement('p');
     errorMessage.innerText = 'Sorry, we couldn\'t find definitions for the word you were looking for.';
-    errorMessage.className = 'word-error-message';
+    errorMessage.className = 'error-message';
+
     let errorResolution = document.createElement('p');
     errorResolution.innerText = 'You can try the search again or head to the web instead.';
-    errorResolution.className = 'word-error-resolution';
+    errorResolution.className = 'error-resolution';
+
     meaningErrorDiv.appendChild(errorMessage);
     meaningErrorDiv.appendChild(errorResolution);
     dictSelector.append(meaningErrorDiv);
+}
+
+
+function renderWebSearchResults(results, webSearchSelector) {
+    webSearchSelector.empty();
+    for (let result of results) {
+        let resultDiv = document.createElement('div');
+        resultDiv.className = 'single-result-div';
+
+        let namepara = document.createElement('p');
+        namepara.className = 'result-name-para';
+        let name = document.createElement('a');
+        name.className = 'result-name-link';
+        name.href = result['link'];
+        name.target = '_blank';
+        name.innerText = result['name'];
+        namepara.appendChild(name);
+        resultDiv.appendChild(namepara);
+
+        let linkpara = document.createElement('p');
+        linkpara.className = 'result-link-para';
+        let link = document.createElement('a');
+        link.className = 'result-link-link';
+        link.href = result['link'];
+        link.target = '_blank';
+        link.innerText = result['link'];
+        linkpara.appendChild(link);
+        resultDiv.appendChild(linkpara);
+
+        if (result['description']) {
+            let description = document.createElement('p');
+            description.className = 'result-desc-class';
+            description.innerText = result['description'];
+            resultDiv.appendChild(description);
+        }
+        webSearchSelector.append(resultDiv);
+    }
+}
+
+
+function webSearchError(webSearchSelector) {
+    webSearchSelector.empty();
+    let searchErrorDiv = document.createElement('div');
+    searchErrorDiv.className = 'error-div';
+    searchErrorDiv.innerHTML = errorSearchIcon;
+
+    let errorMessage = document.createElement('p');
+    errorMessage.innerText = 'Sorry, we couldn\'t find results for your query.';
+    errorMessage.className = 'error-message';
+
+    let errorResolution = document.createElement('p');
+    errorResolution.innerText = 'You can try the search again or head to the web instead.';
+    errorResolution.className = 'error-resolution';
+
+    searchErrorDiv.appendChild(errorMessage);
+    searchErrorDiv.appendChild(errorResolution);
+    webSearchSelector.append(searchErrorDiv);
 }

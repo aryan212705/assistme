@@ -19,6 +19,7 @@
     }
   ],
   "permissions": [
-    "https://api.dictionaryapi.dev/api/v2/entries/*"
+    "https://api.dictionaryapi.dev/api/v2/entries/*",
+    "http://localhost/*"
   ]
 }
