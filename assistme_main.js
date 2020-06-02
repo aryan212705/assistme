@@ -1,16 +1,14 @@
-let popupTag = '<div id="searchResults" class="search-results-div search-results-card"></div>';
-
 let pointerDivTag = '<div id="searchIcon" class="pointer-div">' +
     '<i class="fa fa-lg fa-search fa-search-change" aria-hidden="true"></i></div>';
 
 let errorSearchIcon = '<i class="fa fa-lg fa-search fa-search-error" aria-hidden="true"></i>'
 
-$('body').append(popupTag);
 $('body').append(pointerDivTag);
 
 
 let searchIconDivId = 'searchIcon';
 let searchResultsPopupId = 'searchResults';
+let searchResultsPopupClass = 'search-results-div';
 let DICT_URL = 'https://api.dictionaryapi.dev/api/v2/entries/en/';
 let WEB_API = 'http://localhost:8000/search/';
 let dictSearchLimit = 20;
@@ -22,10 +20,9 @@ let tabNames = [
     ['Suggestion', 'suggestion'],
 ];
 let searchIconSelector = $('#' + searchIconDivId);
-let resultsDivSelector = $('#' + searchResultsPopupId);
-let activeTabId = "";
+let activeTabId = [];
 let searchIconHovered = false;
-
+let popupCount = 0;
 
 $(document).on({
     'selectionchange': function () {
@@ -44,7 +41,7 @@ $(document).on({
 
 
 function searchDictionary(text) {
-    let dictContentSelector = $('#dictionaryContent');
+    let dictContentSelector = $('#dictionaryContent_' + popupCount);
     $.get(DICT_URL + text)
         .done(function (data) {
             renderDictionary(data, dictContentSelector);
@@ -57,7 +54,7 @@ function searchDictionary(text) {
 
 function searchWeb(text) {
     let query = {query_string: text};
-    let webSearchSelector = $('#webSearchContent');
+    let webSearchSelector = $('#webSearchContent_' + popupCount);
     $.get(WEB_API, query)
         .done(function (results) {
             renderWebSearchResults(results, webSearchSelector);
@@ -69,23 +66,25 @@ function searchWeb(text) {
 
 
 function selectCurrentTab(event) {
-    if (activeTabId === event.target.id) {
+    let countId = parseInt(event.target.id.split('_')[1]);
+    if (activeTabId[countId] == event.target.id) {
         return;
     }
     for (let i = 0; i < tabNames.length; i++) {
-        $('#' + tabNames[i][1] + 'Content').hide();
+        $('#' + tabNames[i][1] + 'Content_' + countId).hide();
     }
     let tablinks = document.getElementsByClassName("tab-button-links");
     for (let i = 0; i < tablinks.length; i++) {
-        tablinks[i].className = tablinks[i].className.replace(" active", "");
+        if (tablinks[i].id.split('_')[1] == String(countId))
+            tablinks[i].className = tablinks[i].className.replace(" active", "");
     }
-    activeTabId = event.target.id;
-    $('#' + activeTabId + 'Content').show();
+    activeTabId[countId] = event.target.id;
+    $('#' + event.target.id.split('_')[0] + 'Content_' + countId).show();
     event.target.className += " active";
 }
 
 
-function checkResultsPopupBounds() {
+function checkResultsPopupBounds(resultsDivSelector) {
     let left = (textBoundRects.left + textBoundRects.right) / 2 - resultsDivSelector.outerWidth() / 2;
     let right = left + resultsDivSelector.outerWidth();
     if (left < 0) {
@@ -102,21 +101,22 @@ function checkResultsPopupBounds() {
 
 
 function renderTabLayout() {
+    let resultsDivSelector = $('#' + searchResultsPopupId + '_' + popupCount);
     resultsDivSelector.empty();
-    activeTabId = "";
+    activeTabId[popupCount] = "";
 
-    let tabHeaders = '<div class="tab-headers"></div>';
+    let tabHeaders = `<div class="tab-headers" id="${'tab-headers_' + popupCount}"></div>`;
     resultsDivSelector.append(tabHeaders);
-    let tabHeaderSelector = $('.tab-headers');
+    let tabHeaderSelector = $('#tab-headers_' + popupCount);
     for (let i = 0; i < tabNames.length; i++) {
-        let tabButton = `<a id="${tabNames[i][1]}" class="tab-button-links">${tabNames[i][0]}</a>`;
+        let tabButton = `<a id="${tabNames[i][1] + '_' + popupCount}" class="tab-button-links">${tabNames[i][0]}</a>`;
         tabHeaderSelector.append(tabButton);
     }
     let tabLinksSelector = $('.tab-button-links');
     tabLinksSelector.click(this, selectCurrentTab);
 
     for (let i = 0; i < tabNames.length; i++) {
-        let tabContent = `<div id="${tabNames[i][1] + 'Content'}" class="tab-content-div"></div>`;
+        let tabContent = `<div id="${tabNames[i][1] + 'Content_' + popupCount}" class="tab-content-div"></div>`;
         resultsDivSelector.append(tabContent);
     }
     resultsDivSelector.removeClass('search-results-div-top');
@@ -130,8 +130,8 @@ function renderTabLayout() {
     tabLinksSelector.css({
         width: tabHeaderSelector.outerWidth() / tabNames.length,
     });
-    checkResultsPopupBounds();
-    $('#' + tabNames[0][1]).click();
+    checkResultsPopupBounds(resultsDivSelector);
+    $('#' + tabNames[0][1] + '_' + popupCount).click();
 }
 
 
@@ -140,25 +140,37 @@ searchIconSelector.hover(function () {
     searchIconHovered = true;
     let selectedText = window.getSelection().toString();
     searchIconSelector.hide();
+    let popupDiv = `<div id="${'searchResults_' + popupCount}" class="search-results-div search-results-card"></div>`;
+    $('body').append(popupDiv);
     renderTabLayout();
     if (selectedText.length <= dictSearchLimit) {
         searchDictionary(selectedText);
     }
     else {
-        dictionaryError($('#dictionaryContent'));
+        dictionaryError($('#dictionaryContent_' + popupCount));
     }
     if (selectedText.length <= webSearchLimit) {
         searchWeb(selectedText);
     }
     else {
-        webSearchError($('#webSearchContent'));
+        webSearchError($('#webSearchContent_' + popupCount));
     }
+    popupCount++;
 });
 
 
 window.addEventListener('click', function (event) {
-    if (!(event.target.id === searchResultsPopupId || $(event.target).parents("#" + searchResultsPopupId).length)) {
-        resultsDivSelector.hide();
+    let searchResultsPopup = $(event.target).parents("." + searchResultsPopupClass);
+    if (!(searchResultsPopup.length)) {
+        $('.' + searchResultsPopupClass).remove();
+        popupCount = 0;
+    }
+    else {
+        let idCount = parseInt(searchResultsPopup[0].id.split('_')[1]);
+        for (let i = idCount + 1; i < popupCount; i++) {
+            $('#' + searchResultsPopupId + '_' + i).remove();
+        }
+        popupCount = idCount + 1;
     }
 });
 
