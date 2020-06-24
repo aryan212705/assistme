@@ -1,11 +1,30 @@
+class searchResults {
+    constructor(size) {
+        this.limit = size;
+        this.results = new Map();
+    }
+
+    getResult(query) {
+        let result = this.results.get(query);
+        if (result) {
+            this.results.delete(query);
+            this.results.set(query, result);
+        }
+        return result;
+    }
+
+    setResult(query, result) {
+        if (this.results.size == this.limit) {
+            this.results.delete(this.results.keys().next().value);
+        }
+        this.results.set(query, result);
+    }
+}
+
+
 let pointerDivTag = '<div id="searchIcon" class="pointer-div">' +
     '<i class="fa fa-lg fa-search fa-search-change" aria-hidden="true"></i></div>';
-
 let errorSearchIcon = '<i class="fa fa-lg fa-search fa-search-error" aria-hidden="true"></i>'
-
-$('body').append(pointerDivTag);
-
-
 let searchIconDivId = 'searchIcon';
 let searchResultsPopupId = 'searchResults';
 let searchResultsPopupClass = 'search-results-div';
@@ -22,6 +41,12 @@ let searchIconSelector = $('#' + searchIconDivId);
 let activeTabId = [];
 let searchIconHovered = false;
 let popupCount = 0;
+let cacheLimit = 5;
+let webResults = new searchResults(2 * cacheLimit);
+let dictionaryResults = new searchResults(cacheLimit);
+
+
+$('body').append(pointerDivTag);
 
 $(document).on({
     'selectionchange': function () {
@@ -43,9 +68,15 @@ $(document).on({
 function searchDictionary(text) {
     let dictContentSelector = $('#dictionaryContent_' + popupCount);
     let idCount = popupCount;
+    let cacheResult = dictionaryResults.getResult(text);
+    if (cacheResult) {
+        renderDictionary(cacheResult, dictContentSelector);
+        return;
+    }
     $.get(DICT_URL + text)
         .done(function (data) {
             renderDictionary(data, dictContentSelector);
+            dictionaryResults.setResult(text, data);
         })
         .fail(function () {
             dictionaryError(dictContentSelector);
@@ -57,9 +88,15 @@ function searchDictionary(text) {
 function ddgSearch(text) {
     let webSearchSelector = $('#webSearchContent_' + popupCount);
     let URL = DDG_API + '?q=' + encodeURIComponent(text) + '&format=json';
+    let cacheResult = webResults.getResult(text);
+    if (cacheResult) {
+        renderDdgResults(cacheResult, webSearchSelector);
+        return;
+    }
     $.getJSON(URL)
         .done(function (results) {
             renderDdgResults(results, webSearchSelector);
+            webResults.setResult(text, results);
         })
         .fail(function () {
             webSearchError(webSearchSelector);
