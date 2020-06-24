@@ -42,7 +42,7 @@ let activeTabId = [];
 let searchIconHovered = false;
 let popupCount = 0;
 let cacheLimit = 5;
-let webResults = new searchResults(2 * cacheLimit);
+let webResults = new searchResults(cacheLimit);
 let dictionaryResults = new searchResults(cacheLimit);
 
 
