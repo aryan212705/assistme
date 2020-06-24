@@ -20,6 +20,6 @@
   ],
   "permissions": [
     "https://api.dictionaryapi.dev/api/v2/entries/*",
-    "http://localhost/*"
+    "https://api.duckduckgo.com/*"
   ]
 }

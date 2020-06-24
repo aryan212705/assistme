@@ -10,14 +10,13 @@ let searchIconDivId = 'searchIcon';
 let searchResultsPopupId = 'searchResults';
 let searchResultsPopupClass = 'search-results-div';
 let DICT_URL = 'https://api.dictionaryapi.dev/api/v2/entries/en/';
-let WEB_API = 'http://localhost:8000/search/';
+let DDG_API = 'https://api.duckduckgo.com/';
 let dictSearchLimit = 20;
-let webSearchLimit = 100;
+let webSearchLimit = 50;
 let textBoundRects;
 let tabNames = [
     ['Dictionary', 'dictionary'],
     ['Web Search', 'webSearch'],
-    ['Suggestion', 'suggestion'],
 ];
 let searchIconSelector = $('#' + searchIconDivId);
 let activeTabId = [];
@@ -28,7 +27,8 @@ $(document).on({
     'selectionchange': function () {
         textBoundRects = window.getSelection().getRangeAt(0).getBoundingClientRect();
         searchIconSelector.hide();
-        if (window.getSelection().toString()) {
+        let selectedText = window.getSelection().toString();
+        if (selectedText.length > 0 && selectedText.length <= webSearchLimit) {
             searchIconHovered = false;
             searchIconSelector.css({
                 top: textBoundRects.top - searchIconSelector.outerHeight() + window.scrollY - 10,
@@ -42,22 +42,24 @@ $(document).on({
 
 function searchDictionary(text) {
     let dictContentSelector = $('#dictionaryContent_' + popupCount);
+    let idCount = popupCount;
     $.get(DICT_URL + text)
         .done(function (data) {
             renderDictionary(data, dictContentSelector);
         })
         .fail(function () {
             dictionaryError(dictContentSelector);
+            $('#webSearch_' + idCount).click();
         });
 }
 
 
-function searchWeb(text) {
-    let query = {query_string: text};
+function ddgSearch(text) {
     let webSearchSelector = $('#webSearchContent_' + popupCount);
-    $.get(WEB_API, query)
+    let URL = DDG_API + '?q=' + encodeURIComponent(text) + '&format=json';
+    $.getJSON(URL)
         .done(function (results) {
-            renderWebSearchResults(results, webSearchSelector);
+            renderDdgResults(results, webSearchSelector);
         })
         .fail(function () {
             webSearchError(webSearchSelector);
@@ -148,9 +150,10 @@ searchIconSelector.hover(function () {
     }
     else {
         dictionaryError($('#dictionaryContent_' + popupCount));
+        $('#webSearch_' + popupCount).click();
     }
     if (selectedText.length <= webSearchLimit) {
-        searchWeb(selectedText);
+        ddgSearch(selectedText);
     }
     else {
         webSearchError($('#webSearchContent_' + popupCount));
@@ -250,40 +253,94 @@ function dictionaryError(dictSelector) {
 }
 
 
-function renderWebSearchResults(results, webSearchSelector) {
+function renderDdgResults(results, webSearchSelector) {
     webSearchSelector.empty();
-    for (let result of results) {
-        let resultDiv = document.createElement('div');
-        resultDiv.className = 'single-result-div';
+    let heading = results['Heading'];
+    let abstractHtml = results['Abstract'];
+    let abstractUrl = results['AbstractURL'];
+    let hasResult = false;
 
-        let namepara = document.createElement('p');
-        namepara.className = 'result-name-para';
-        let name = document.createElement('a');
-        name.className = 'result-name-link';
-        name.href = result['link'];
-        name.target = '_blank';
-        name.innerText = result['name'];
-        namepara.appendChild(name);
-        resultDiv.appendChild(namepara);
-
-        let linkpara = document.createElement('p');
-        linkpara.className = 'result-link-para';
-        let link = document.createElement('a');
-        link.className = 'result-link-link';
-        link.href = result['link'];
-        link.target = '_blank';
-        link.innerText = result['link'];
-        linkpara.appendChild(link);
-        resultDiv.appendChild(linkpara);
-
-        if (result['description']) {
-            let description = document.createElement('p');
-            description.className = 'result-desc-class';
-            description.innerText = result['description'];
-            resultDiv.appendChild(description);
+    if (abstractHtml) {
+        hasResult = true;
+        let abstractDiv = document.createElement('div');
+        abstractDiv.className = 'abstract-result-div';
+        if (heading) {
+            let headingPara = document.createElement('p');
+            headingPara.className = 'abstract-heading-para';
+            if (abstractUrl) {
+                let headingLink = document.createElement('a');
+                headingLink.className = 'abstract-heading-link';
+                headingLink.href = abstractUrl;
+                headingLink.target = '_blank';
+                headingLink.innerText = heading;
+                headingPara.appendChild(headingLink);
+            }
+            else {
+                headingPara.innerText = heading;
+            }
+            abstractDiv.appendChild(headingPara);
         }
-        webSearchSelector.append(resultDiv);
+
+        let abstractPara = document.createElement('p');
+        abstractPara.className = 'abstract-result-para';
+        abstractPara.innerHTML = abstractHtml;
+        abstractDiv.appendChild(abstractPara);
+        webSearchSelector.append(abstractDiv);
     }
+
+    for (let result of results['Results'].concat(results['RelatedTopics'])) {
+        hasResult = true;
+        if (result['Topics'])
+            for (let res of result['Topics'])
+                renderDdgSearchResult(res, webSearchSelector);
+        else
+            renderDdgSearchResult(result, webSearchSelector);
+    }
+
+    if (!hasResult) {
+        webSearchError(webSearchSelector);
+    }
+}
+
+
+function renderDdgSearchResult(result, webSearchSelector) {
+    let resultDiv = document.createElement('div');
+    resultDiv.className = 'single-result-div';
+
+    let span = document.createElement('span');
+    span.innerHTML = result['Result'].split('</a>')[0] + '</a>';
+    let namePara = document.createElement('p');
+    namePara.className = 'result-name-para';
+
+    let name = document.createElement('a');
+    name.className = 'result-name-link';
+    name.href = result['FirstURL'];
+    name.target = '_blank';
+    name.innerText = span.innerText;
+    namePara.appendChild(name);
+    resultDiv.appendChild(namePara);
+
+    let linkPara = document.createElement('p');
+    linkPara.className = 'result-link-para';
+    let link = document.createElement('a');
+    link.className = 'result-link-link';
+    link.href = result['FirstURL'];
+    link.target = '_blank';
+    link.innerText = result['FirstURL'];
+    linkPara.appendChild(link);
+    resultDiv.appendChild(linkPara);
+
+    let descText = result['Result'].split('</a>')[1];
+    if (descText.toString().startsWith(' -') || descText.toString().startsWith('-')) {
+        descText = descText.toString().substr(2);
+    }
+    if (descText) {
+        let description = document.createElement('p');
+        description.className = 'result-desc-class';
+        description.innerText = descText;
+        resultDiv.appendChild(description);
+    }
+    webSearchSelector.append(resultDiv);
 }
 
 
