@@ -374,7 +374,7 @@ function renderDdgSearchResult(result, webSearchSelector) {
     if (descText) {
         let description = document.createElement('p');
         description.className = 'result-desc-class';
-        description.innerText = descText;
+        description.innerHTML = descText;
         resultDiv.appendChild(description);
     }
     webSearchSelector.append(resultDiv);
