@@ -16,9 +16,9 @@ Steps:
 * Results for the selected piece of text appears
 
 ## Illustrations
-![Demo](./images/assistme_demo1.png)
+![Demo](./images/assistme_demo1.png)<br><hr>
 
-![Demo](./images/assistme_demo2.png)
+![Demo](./images/assistme_demo2.png)<br><hr>
 
 ![Demo](./images/assistme_demo3.png)
 
