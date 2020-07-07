@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "Assist Me",
   "version": "1.0",
-  "description": "It helps makes browsing experience better by providing realtime information on the current webpage itself",
+  "description": "It helps make browsing experience better by providing realtime information on the current webpage itself.",
   "content_scripts": [
     {
       "matches": [
