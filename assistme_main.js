@@ -22,8 +22,7 @@ class searchResults {
 }
 
 
-let pointerDivTag = '<div id="searchIcon" class="pointer-div">' +
-    '<i class="fa fa-lg fa-search fa-search-change" aria-hidden="true"></i></div>';
+let pointerDivTag = '<div id="searchIcon" class="pointer-div"><i class="fa fa-lg fa-search fa-search-change" aria-hidden="true"></i></div>';
 let errorSearchIcon = '<i class="fa fa-lg fa-search fa-search-error" aria-hidden="true"></i>'
 let searchIconDivId = 'searchIcon';
 let searchResultsPopupId = 'searchResults';
@@ -37,7 +36,7 @@ let tabNames = [
     ['Dictionary', 'dictionary'],
     ['Web Search', 'webSearch'],
 ];
-let searchIconSelector = $('#' + searchIconDivId);
+let searchIconSelector;
 let activeTabId = [];
 let searchIconHovered = false;
 let popupCount = 0;
@@ -46,7 +45,12 @@ let webResults = new searchResults(cacheLimit);
 let dictionaryResults = new searchResults(cacheLimit);
 
 
-$('body').append(pointerDivTag);
+$( document ).ready(function() {
+    $('body').append(pointerDivTag);
+    searchIconSelector = $('#' + searchIconDivId);
+    attachEventListener();
+});
+
 
 $(document).on({
     'selectionchange': function () {
@@ -173,30 +177,31 @@ function renderTabLayout() {
     $('#' + tabNames[0][1] + '_' + popupCount).click();
 }
 
-
-searchIconSelector.hover(function () {
-    if (searchIconHovered) return;
-    searchIconHovered = true;
-    let selectedText = window.getSelection().toString();
-    searchIconSelector.hide();
-    let popupDiv = `<div id="${'searchResults_' + popupCount}" class="search-results-div search-results-card"></div>`;
-    $('body').append(popupDiv);
-    renderTabLayout();
-    if (selectedText.length <= dictSearchLimit) {
-        searchDictionary(selectedText);
-    }
-    else {
-        dictionaryError($('#dictionaryContent_' + popupCount));
-        $('#webSearch_' + popupCount).click();
-    }
-    if (selectedText.length <= webSearchLimit) {
-        ddgSearch(selectedText);
-    }
-    else {
-        webSearchError($('#webSearchContent_' + popupCount));
-    }
-    popupCount++;
-});
+function attachEventListener() {
+    searchIconSelector.hover(function () {
+        if (searchIconHovered) return;
+        searchIconHovered = true;
+        let selectedText = window.getSelection().toString();
+        searchIconSelector.hide();
+        let popupDiv = `<div id="${'searchResults_' + popupCount}" class="search-results-div search-results-card"></div>`;
+        $('body').append(popupDiv);
+        renderTabLayout();
+        if (selectedText.length <= dictSearchLimit) {
+            searchDictionary(selectedText);
+        }
+        else {
+            dictionaryError($('#dictionaryContent_' + popupCount));
+            $('#webSearch_' + popupCount).click();
+        }
+        if (selectedText.length <= webSearchLimit) {
+            ddgSearch(selectedText);
+        }
+        else {
+            webSearchError($('#webSearchContent_' + popupCount));
+        }
+        popupCount++;
+    });
+}
 
 
 window.addEventListener('click', function (event) {

@@ -4,6 +4,7 @@
     border-radius: 0.5em;
     display: none;
     z-index: 1000000;
+    cursor: grab;
 }
 
 .pointer-div:after {
