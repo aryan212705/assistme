@@ -1,5 +1,5 @@
 # assistme
-It helps make browsing experience better by providing realtime information on the current webpage itself.
+An all browser extension that helps make browsing experience better by providing realtime information on the current webpage itself.
 
 ## Features
 * Gives a dictionary meaning of the selected text
@@ -16,9 +16,9 @@ Steps:
 * Results for the selected piece of text appears
 
 ## Illustrations
-![Demo](./images/assistme_demo1.png)
+![Demo](./images/assistme_demo1.png)<br><hr>
 
-![Demo](./images/assistme_demo2.png)
+![Demo](./images/assistme_demo2.png)<br><hr>
 
 ![Demo](./images/assistme_demo3.png)
 
